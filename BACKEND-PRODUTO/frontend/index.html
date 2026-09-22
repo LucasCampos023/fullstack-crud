@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProductFlow</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="intro">
+    <div class="intro-card">
+        <div class="intro-logo">PF</div>
+        <h1>ProductFlow</h1>
+        <p>Developed by Lucas Campos</p>
+        <div class="intro-line"></div>
+    </div>
+</div>
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">PF</div>
+                <div>
+                    <h2>ProductFlow</h2>
+                    <span>Fullstack System</span>
+                </div>
+            </div>
+
+            <nav>
+                <button class="menu-link active" onclick="abrirPagina('dashboard', this)">Dashboard</button>
+                <button class="menu-link" onclick="abrirPagina('produtos', this)">Produtos</button>
+                <button class="menu-link" onclick="abrirPagina('relatorios', this)">Relatórios</button>
+                <button class="menu-link" onclick="abrirPagina('configuracoes', this)">Configurações</button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span>API REST</span>
+                <strong>Node.js + MySQL</strong>
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <header class="topbar">
+                <div>
+                    <h1 id="titulo-pagina">Dashboard</h1>
+                    <p id="subtitulo-pagina">Visão geral do sistema.</p>
+                </div>
+
+                <div class="status">
+                    <span></span>
+                    Backend online
+                </div>
+            </header>
+
+            <section class="page active-page" id="dashboard">
+                <section class="metrics">
+                    <div class="metric-card">
+                        <span>Total de Produtos</span>
+                        <strong id="total-produtos">0</strong>
+                        <small>Registros cadastrados</small>
+                    </div>
+
+                    <div class="metric-card">
+                        <span>Itens em Estoque</span>
+                        <strong id="total-estoque">0</strong>
+                        <small>Soma das quantidades</small>
+                    </div>
+
+                    <div class="metric-card">
+                        <span>Valor Total</span>
+                        <strong id="valor-total">R$ 0,00</strong>
+                        <small>Valor total em estoque</small>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h2>Resumo da Aplicação</h2>
+                    <p>Sistema fullstack integrado com frontend, API REST e MySQL.</p>
+                </section>
+            </section>
+
+            <section class="page" id="produtos">
+
+                <section class="content-grid">
+
+                    <div class="panel">
+                        <h2>Cadastro de Produto</h2>
+                        <p>Cadastre ou atualize produtos.</p>
+
+                        <form id="form-produto">
+                            <input type="hidden" id="produto-id">
+
+                            <div class="field">
+                                <label>Nome do Produto</label>
+                                <input type="text" id="nome" placeholder="Ex: Mouse Gamer" required>
+                            </div>
+
+                            <div class="field">
+                                <label>Categoria</label>
+                                <input type="text" id="categoria" placeholder="Ex: Periféricos" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="field">
+                                    <label>Preço</label>
+                                    <input type="number" id="preco" placeholder="150.00" step="0.01" required>
+                                </div>
+
+                                <div class="field">
+                                    <label>Quantidade</label>
+                                    <input type="number" id="quantidade" placeholder="5" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btn-submit" class="btn-primary">
+                                Cadastrar Produto
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Pesquisar Produto</h2>
+                        <p>Busque um produto pelo ID.</p>
+
+                        <div class="search-box">
+                            <input type="number" id="pesquisa-id" placeholder="Digite o ID">
+                            <button onclick="pesquisarProduto()">Buscar</button>
+                        </div>
+
+                        <button class="btn-secondary" onclick="carregarProdutos()">
+                            Mostrar Todos
+                        </button>
+
+                        <p id="mensagem"></p>
+                    </div>
+
+                </section>
+
+                <section class="panel table-panel">
+                    <h2>Produtos Cadastrados</h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Preço</th>
+                                    <th>Qtd.</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="lista-produtos"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </section>
+
+            <section class="page" id="relatorios">
+                <section class="metrics">
+                    <div class="metric-card">
+                        <span>Total de Produtos</span>
+                        <strong id="relatorio-produtos">0</strong>
+                        <small>Produtos cadastrados</small>
+                    </div>
+
+                    <div class="metric-card">
+                        <span>Itens em Estoque</span>
+                        <strong id="relatorio-estoque">0</strong>
+                        <small>Quantidade total</small>
+                    </div>
+
+                    <div class="metric-card">
+                        <span>Valor em Estoque</span>
+                        <strong id="relatorio-valor">R$ 0,00</strong>
+                        <small>Preço x quantidade</small>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h2>Relatório Geral</h2>
+                    <p id="texto-relatorio">Nenhum dado carregado ainda.</p>
+                </section>
+            </section>
+
+            <section class="page" id="configuracoes">
+                <section class="panel">
+                    <h2>Configurações</h2>
+
+                    <div class="settings-grid">
+                        <div>
+                            <span>API</span>
+                            <strong>http://localhost:3000/produtos</strong>
+                        </div>
+
+                        <div>
+                            <span>Backend</span>
+                            <strong>Node.js + Express</strong>
+                        </div>
+
+                        <div>
+                            <span>Banco de Dados</span>
+                            <strong>MySQL</strong>
+                        </div>
+
+                        <div>
+                            <span>Segurança</span>
+                            <strong>dotenv configurado</strong>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
