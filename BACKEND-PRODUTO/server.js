@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const Produto = require("./models/Produto.js");
 const ProdutoRepository = require("./persistence/ProdutoRepository.js");
+const { validarProduto, validarId } = require("./validators/produtoValidator.js");
 
 const app = express();
 
@@ -27,7 +28,11 @@ app.get("/produtos", async (req, res) => {
 // GET POR ID
 app.get("/produtos/:id", async (req, res) => {
 
-    const id = req.params.id;
+    const id = validarId(req.params.id);
+
+    if (!id) {
+        return res.status(400).json({ mensagem: "ID inválido" });
+    }
 
     const produto = await repository.buscarPorId(id);
 
@@ -44,7 +49,13 @@ app.get("/produtos/:id", async (req, res) => {
 
 // POST
 app.post("/produtos", async (req, res) => {
-    const { nome, categoria, preco, quantidade } = req.body;
+    const { erros, produto: dados } = validarProduto(req.body);
+
+    if (erros.length > 0) {
+        return res.status(400).json({ mensagem: "Dados inválidos", erros });
+    }
+
+    const { nome, categoria, preco, quantidade } = dados;
 
     const produtoExistente = await repository.buscarProdutoIgual(
         nome,
@@ -93,14 +104,19 @@ app.post("/produtos", async (req, res) => {
 // PUT
 app.put("/produtos/:id", async (req, res) => {
 
-    const id = req.params.id;
+    const id = validarId(req.params.id);
 
-    const {
-        nome,
-        categoria,
-        preco,
-        quantidade
-    } = req.body;
+    if (!id) {
+        return res.status(400).json({ mensagem: "ID inválido" });
+    }
+
+    const { erros, produto: dados } = validarProduto(req.body);
+
+    if (erros.length > 0) {
+        return res.status(400).json({ mensagem: "Dados inválidos", erros });
+    }
+
+    const { nome, categoria, preco, quantidade } = dados;
 
     const produtoExistente =
         await repository.buscarPorId(id);
@@ -135,7 +151,11 @@ app.put("/produtos/:id", async (req, res) => {
 // DELETE
 app.delete("/produtos/:id", async (req, res) => {
 
-    const id = req.params.id;
+    const id = validarId(req.params.id);
+
+    if (!id) {
+        return res.status(400).json({ mensagem: "ID inválido" });
+    }
 
     const produtoExistente =
         await repository.buscarPorId(id);
@@ -154,6 +174,19 @@ app.delete("/produtos/:id", async (req, res) => {
         mensagem:
             "Produto removido com sucesso"
     });
+});
+
+
+// ERROS
+// No Express 5, erro lançado dentro de rota async cai aqui automaticamente.
+app.use((err, req, res, next) => {
+    if (err.type === "entity.parse.failed") {
+        return res.status(400).json({ mensagem: "JSON inválido no corpo da requisição" });
+    }
+
+    console.error(err);
+
+    res.status(500).json({ mensagem: "Erro interno no servidor" });
 });
 
 
