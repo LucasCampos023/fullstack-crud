@@ -4,7 +4,8 @@
   "description": "CRUD de produtos com API REST em Node.js/Express, MySQL e frontend em JavaScript puro",
   "main": "BACKEND-PRODUTO/server.js",
   "scripts": {
-    "start": "node BACKEND-PRODUTO/server.js"
+    "start": "node BACKEND-PRODUTO/server.js",
+    "test": "node --test BACKEND-PRODUTO/tests/*.test.js"
   },
   "keywords": [],
   "author": "Lucas Campos",
