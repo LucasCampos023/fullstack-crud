@@ -1,6 +1,7 @@
+const path = require("path");
 
-
-require("dotenv").config();
+// Lê o .env da pasta do projeto, de onde quer que o comando seja rodado.
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const mysql = require("mysql2/promise");
 
