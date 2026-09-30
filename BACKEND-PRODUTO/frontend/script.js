@@ -8,10 +8,12 @@ const produtoId = document.getElementById("produto-id");
 
 const btnSubmit = document.getElementById("btn-submit");
 
+const API_URL = "http://localhost:3000/produtos";
+
 
 // LISTAR PRODUTOS
 async function carregarProdutos() {
-    const resposta = await fetch("http://localhost:3000/produtos");
+    const resposta = await fetch(API_URL);
 
     const produtos = await resposta.json();
 
@@ -44,24 +46,7 @@ function renderizarProdutos(produtos) {
         somaValores +=
             Number(produto.preco) * Number(produto.quantidade);
 
-        listaProdutos.innerHTML += `
-            <tr>
-                <td>${produto.id}</td>
-                <td>${produto.nome}</td>
-                <td>${produto.categoria}</td>
-                <td>R$ ${Number(produto.preco).toFixed(2)}</td>
-                <td>${produto.quantidade}</td>
-                <td>
-                    <button onclick="editarProduto(${produto.id})">
-                        Editar
-                    </button>
-
-                    <button class="btn-delete" onclick="removerProduto(${produto.id})">
-                        Excluir
-                    </button>
-                </td>
-            </tr>
-        `;
+        listaProdutos.appendChild(criarLinhaProduto(produto));
     });
 
     atualizarRelatorios(
@@ -69,6 +54,60 @@ function renderizarProdutos(produtos) {
         somaEstoque,
         somaValores
     );
+}
+
+
+// MONTAR LINHA DA TABELA
+// Usa textContent em vez de innerHTML: se alguém cadastrar um nome com
+// <script> ou <img onerror=...>, ele aparece como texto e não é executado (XSS).
+function criarLinhaProduto(produto) {
+    const linha = document.createElement("tr");
+
+    const colunas = [
+        produto.id,
+        produto.nome,
+        produto.categoria,
+        `R$ ${Number(produto.preco).toFixed(2)}`,
+        produto.quantidade
+    ];
+
+    colunas.forEach((valor) => {
+        const celula = document.createElement("td");
+        celula.textContent = valor;
+        linha.appendChild(celula);
+    });
+
+    const acoes = document.createElement("td");
+
+    const btnEditar = document.createElement("button");
+    btnEditar.textContent = "Editar";
+    btnEditar.addEventListener("click", () => editarProduto(produto.id));
+
+    const btnExcluir = document.createElement("button");
+    btnExcluir.textContent = "Excluir";
+    btnExcluir.className = "btn-delete";
+    btnExcluir.addEventListener("click", () => removerProduto(produto.id));
+
+    acoes.append(btnEditar, btnExcluir);
+    linha.appendChild(acoes);
+
+    return linha;
+}
+
+
+// MENSAGEM DE ERRO DA API
+async function lerErro(resposta) {
+    try {
+        const corpo = await resposta.json();
+
+        if (corpo.erros) {
+            return `${corpo.mensagem}: ${corpo.erros.join("; ")}`;
+        }
+
+        return corpo.mensagem || "Erro ao comunicar com a API.";
+    } catch {
+        return "Erro ao comunicar com a API.";
+    }
 }
 
 
@@ -127,7 +166,7 @@ form.addEventListener("submit", async (event) => {
     };
 
     if (produtoId.value) {
-        await fetch(`http://localhost:3000/produtos/${produtoId.value}`, {
+        const resposta = await fetch(`${API_URL}/${produtoId.value}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -135,17 +174,27 @@ form.addEventListener("submit", async (event) => {
             body: JSON.stringify(produto)
         });
 
+        if (!resposta.ok) {
+            mensagem.innerText = await lerErro(resposta);
+            return;
+        }
+
         mensagem.innerText = "Produto atualizado com sucesso.";
         btnSubmit.innerText = "Cadastrar Produto";
         produtoId.value = "";
     } else {
-        const resposta = await fetch("http://localhost:3000/produtos", {
+        const resposta = await fetch(API_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(produto)
         });
+
+        if (!resposta.ok) {
+            mensagem.innerText = await lerErro(resposta);
+            return;
+        }
 
         const resultado = await resposta.json();
 
@@ -160,9 +209,14 @@ form.addEventListener("submit", async (event) => {
 
 // REMOVER PRODUTO
 async function removerProduto(id) {
-    await fetch(`http://localhost:3000/produtos/${id}`, {
+    const resposta = await fetch(`${API_URL}/${id}`, {
         method: "DELETE"
     });
+
+    if (!resposta.ok) {
+        mensagem.innerText = await lerErro(resposta);
+        return;
+    }
 
     mensagem.innerText = "Produto removido com sucesso.";
 
@@ -172,7 +226,7 @@ async function removerProduto(id) {
 
 // EDITAR PRODUTO
 async function editarProduto(id) {
-    const resposta = await fetch(`http://localhost:3000/produtos/${id}`);
+    const resposta = await fetch(`${API_URL}/${id}`);
 
     const produto = await resposta.json();
 
@@ -200,7 +254,7 @@ async function pesquisarProduto() {
         return;
     }
 
-    const resposta = await fetch(`http://localhost:3000/produtos/${id}`);
+    const resposta = await fetch(`${API_URL}/${id}`);
 
     if (!resposta.ok) {
         mensagem.innerText = "Produto não encontrado.";
